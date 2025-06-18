@@ -1,9 +1,11 @@
-name: Upload SQL Scripts to Azure Blob
+name: Upload Only Updated SQL Scripts to Azure Blob
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'scripts/**/*.sql'
 
 jobs:
   upload:
@@ -18,12 +20,31 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Upload SQL files to Blob
+    - name: Delete all files in the container (truncate)
       run: |
-        az storage blob upload-batch \
+        echo "Deleting existing .sql files in the container..."
+        az storage blob delete-batch \
           --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
-          --destination ${{ secrets.AZURE_CONTAINER_NAME }} \
-          --source ./scripts \
+          --source ${{ secrets.AZURE_CONTAINER_NAME }} \
           --pattern *.sql \
-          --overwrite \
-          --auth-mode login
+          --auth-mode login || true
+
+    - name: Upload only updated SQL files
+      run: |
+        # Get list of changed .sql files
+        changed_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- 'scripts/**/*.sql')
+
+        echo "Changed SQL files:"
+        echo "$changed_files"
+
+        # Upload each changed file
+        for file in $changed_files; do
+          echo "Uploading $file..."
+          az storage blob upload \
+            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+            --container-name ${{ secrets.AZURE_CONTAINER_NAME }} \
+            --name "${file#scripts/}" \
+            --file "$file" \
+            --overwrite \
+            --auth-mode login
+        done
