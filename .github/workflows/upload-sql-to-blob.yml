@@ -25,4 +25,5 @@ jobs:
           --destination ${{ secrets.AZURE_CONTAINER_NAME }} \
           --source ./scripts \
           --pattern *.sql \
-          --overwrite
+          --overwrite \
+          --auth-mode login
