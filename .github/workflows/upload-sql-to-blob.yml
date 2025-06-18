@@ -15,7 +15,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       with:
-        fetch-depth: 0
+        fetch-depth: 2
 
     - name: Login to Azure
       uses: azure/login@v1
@@ -43,7 +43,7 @@ jobs:
 
         echo "Diffing from $prev_commit to $curr_commit"
 
-        changed_files=$(git diff --name-only "$prev_commit" "$curr_commit" -- 'scripts/**/*.sql')
+        changed_files=$(git diff --name-only "$prev_commit" "$curr_commit" | grep '^scripts/.*\.sql$')
 
         echo "Changed SQL files:"
         echo "$changed_files"
