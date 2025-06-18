@@ -1,1 +1,1 @@
-select * from TableA;
+select * from Table;
