@@ -1,0 +1,28 @@
+name: Upload SQL Scripts to Azure Blob
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Upload SQL files to Blob
+      run: |
+        az storage blob upload-batch \
+          --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+          --destination ${{ secrets.AZURE_CONTAINER_NAME }} \
+          --source ./scripts \
+          --pattern *.sql \
+          --overwrite
