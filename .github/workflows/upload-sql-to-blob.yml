@@ -38,8 +38,12 @@ jobs:
 
     - name: Upload only updated SQL files
       run: |
-        # Get list of changed .sql files
-        changed_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- 'scripts/**/*.sql')
+        prev_commit=$(git rev-parse HEAD~1)
+        curr_commit=$(git rev-parse HEAD)
+
+        echo "Diffing from $prev_commit to $curr_commit"
+
+        changed_files=$(git diff --name-only "$prev_commit" "$curr_commit" -- 'scripts/**/*.sql')
 
         echo "Changed SQL files:"
         echo "$changed_files"
