@@ -31,6 +31,11 @@ jobs:
           --pattern *.sql \
           --auth-mode login || true
 
+    - name: Debug commit SHAs
+      run: |
+        echo "From: ${{ github.event.before }}"
+        echo "To:   ${{ github.sha }}"
+
     - name: Upload only updated SQL files
       run: |
         # Get list of changed .sql files
